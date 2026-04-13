@@ -1,0 +1,151 @@
+/* Пятнашки для Аняшки */
+:root {
+  --bg:     #1c1a2e;
+  --card:   #26243a;
+  --accent: #b48ecf;
+  --accent2:#90bfd6;
+  --muted:  #a89cbe;
+  --surface:#26243a;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  background: linear-gradient(135deg, #1c1a2e 0%, #1a2538 100%);
+  color: #ddd5f0;
+  padding: 20px;
+}
+.app { max-width: 980px; margin: 0 auto; }
+
+h1 {
+  margin: 0 0 4px;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  background: linear-gradient(90deg, #c9a8e0, #85b8d4, #8ecdbf);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.lead { color: var(--muted); margin: 0 0 14px; }
+
+/* Picker */
+.picker-wrap  { margin-bottom: 14px; }
+.picker-label { color: var(--muted); margin: 0 0 8px; font-size:.9rem; }
+.picker       { display: flex; flex-wrap: wrap; gap: 10px; }
+.picker-thumb {
+  width: 80px; height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  opacity: .5;
+  transition: opacity .15s, border-color .15s, transform .12s;
+}
+.picker-thumb:hover  { opacity: .8; transform: scale(1.06); }
+.picker-thumb.active {
+  border-color: var(--accent);
+  opacity: 1;
+  transform: scale(1.1);
+  box-shadow: 0 0 14px rgba(180,142,207,.35);
+}
+
+/* Controls */
+.controls {
+  display: flex; flex-wrap: wrap;
+  gap: 10px; align-items: center;
+  margin: 0 0 12px;
+}
+.controls label { color: var(--muted); font-size: .9rem; }
+.controls select {
+  background: #2e2b44; color: #ddd5f0;
+  border: 1px solid var(--accent);
+  border-radius: 6px; padding: 4px 8px;
+}
+.controls button {
+  background: linear-gradient(135deg, #7a5c99, #4a7e9e);
+  border: none; padding: 8px 14px;
+  border-radius: 10px; color: #ddd5f0;
+  cursor: pointer; font-weight: 700;
+  transition: transform .1s, box-shadow .1s;
+}
+.controls button:hover  { box-shadow: 0 0 12px rgba(180,142,207,.35); }
+.controls button:active { transform: translateY(2px); }
+.mute-btn {
+  background: #2e2b44 !important;
+  color: #ddd5f0 !important;
+  border: 1px solid var(--accent) !important;
+  font-size: 1.1rem;
+  padding: 6px 10px !important;
+}
+.stats {
+  margin-left: auto; color: var(--muted);
+  display: flex; gap: 14px;
+}
+
+/* Puzzle */
+.puzzle-wrapper { display: flex; justify-content: center; }
+.puzzle {
+  width:  min(92vw, 560px);
+  height: min(92vw, 560px);
+  display: grid;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(144,191,214,.2);
+  background: #1c1a2e;
+  box-shadow: 0 4px 32px rgba(0,0,0,.4);
+}
+.tile {
+  user-select: none;
+  transition: opacity .1s;
+  position: relative;
+}
+.tile.empty {
+  background: #141224 !important;
+  cursor: default;
+}
+.tile.drop-target {
+  background: rgba(180,142,207,.15) !important;
+  outline: 3px dashed var(--accent);
+  outline-offset: -3px;
+}
+
+/* Tile bounce animation on move */
+@keyframes tilePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.tile.pop { animation: tilePop .18s ease-out; }
+
+/* Overlay */
+.overlay {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10,8,24,.75);
+  backdrop-filter: blur(4px);
+}
+.overlay.hidden { display: none; }
+.overlay-card {
+  background: linear-gradient(135deg, #26243a, #1e2c3d);
+  padding: 32px 40px;
+  border-radius: 18px;
+  border: 2px solid rgba(180,142,207,.3);
+  text-align: center;
+  box-shadow: 0 8px 48px rgba(0,0,0,.5);
+}
+.overlay-card h2 { margin-top: 0; font-size: 1.8rem; color: #ddd5f0; }
+.fireworks { font-size: 2.2rem; margin-bottom: 8px; animation: bounce 1s infinite alternate; }
+@keyframes bounce { from { transform: scale(1) rotate(-3deg); } to { transform: scale(1.12) rotate(3deg); } }
+.message { font-size: 1.1rem; margin: 8px 0 16px; color: #a89cbe; }
+#playAgain {
+  background: linear-gradient(135deg, #7a5c99, #4a7e9e);
+  border: none; padding: 12px 28px;
+  border-radius: 12px; color: #ddd5f0;
+  cursor: pointer; font-weight: 800; font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .controls { gap: 8px; }
+  .puzzle   { width: 92vw; height: 92vw; }
+  .picker-thumb { width: 60px; height: 60px; }
+}

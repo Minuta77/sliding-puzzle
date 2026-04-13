@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Пятнашки для Аняшки</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+/* ── Audio Player ──────────────────────────────────────────── */
+.audio-player {
+  position: fixed;
+  bottom: 22px; right: 22px;
+  z-index: 200;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px 10px 12px;
+  border-radius: 50px;
+  background: rgba(30,26,50,0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(180,142,207,0.3);
+  box-shadow: 0 6px 28px rgba(0,0,0,.45);
+  transition: box-shadow .3s;
+}
+.audio-player:hover { box-shadow: 0 10px 36px rgba(180,142,207,.35); }
+.audio-play-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%; border: none;
+  background: linear-gradient(135deg, #7a5c99, #4a7e9e);
+  color: #fff; font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s;
+  flex-shrink: 0;
+}
+.audio-play-btn:hover { transform: scale(1.1); }
+.audio-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.audio-title  { font-size: .76rem; font-weight: 600; color: #ddd5f0; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.audio-artist { font-size: .68rem; color: #a89cbe; }
+.audio-progress-wrap {
+  width: 90px; height: 3px;
+  background: rgba(255,255,255,.15);
+  border-radius: 10px; overflow: hidden; cursor: pointer;
+}
+.audio-progress-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #b48ecf, #90bfd6);
+  border-radius: 10px; transition: width .5s linear;
+}
+.audio-vol-btn {
+  background: none; border: none;
+  font-size: 1rem; cursor: pointer;
+  color: #a89cbe; padding: 0; transition: color .15s;
+  flex-shrink: 0;
+}
+.audio-vol-btn:hover { color: #b48ecf; }
+@media (max-width: 480px) {
+  .audio-player { right: 10px; bottom: 10px; padding: 8px 12px 8px 10px; }
+  .audio-progress-wrap { display: none; }
+  .audio-title { max-width: 100px; }
+}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>&#x1F9E9; Пятнашки для Аняшки &#x1F380;</h1>
+    <p class="lead">Собери картинку, сдвигая кусочки!</p>
+
+    <!-- Image picker -->
+    <div id="pickerWrap" class="picker-wrap">
+      <p class="picker-label">Выбери фото:</p>
+      <div id="picker" class="picker"></div>
+    </div>
+
+    <div class="controls">
+      <label>Сложность:
+        <select id="gridSize">
+          <option value="3">3 × 3 &#x1F60A;</option>
+          <option value="4" selected>4 × 4 &#x1F605;</option>
+          <option value="5">5 × 5 &#x1F631;</option>
+        </select>
+      </label>
+      <button id="shuffleBtn">&#x1F500; Перемешать</button>
+      <button id="resetBtn">&#x21A9; Сбросить</button>
+      <button id="muteBtn" class="mute-btn">&#x1F50A;</button>
+      <div class="stats">
+        <span>Ходы: <strong id="moveCount">0</strong></span>
+        <span>Время: <strong id="timer">00:00</strong></span>
+      </div>
+    </div>
+
+    <section class="puzzle-wrapper">
+      <div id="puzzle" class="puzzle"></div>
+    </section>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <div class="fireworks">&#x1F386;&#x1F387;&#x2728;&#x1F389;&#x1F38A;</div>
+        <h2>Молодец, Аняшка! &#x1F380;</h2>
+        <p class="message">Ты собрала пазл! С днём рождения! &#x2764;&#xFE0F;</p>
+        <p>Ходы: <span id="finalMoves">0</span> — Время: <span id="finalTime">00:00</span></p>
+        <button id="playAgain">&#x1F504; Ещё раз!</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+
+  <!-- ── Audio Player ──────────────────────────────────────── -->
+  <audio id="bgAudio" src="music.mp3" loop preload="none"></audio>
+
+  <div class="audio-player">
+    <button class="audio-play-btn" id="playBtn" title="Play / Pause">&#x25B6;</button>
+    <div class="audio-info">
+      <span class="audio-title">С Днём Рождения</span>
+      <span class="audio-artist">Ирина Аллегрова</span>
+      <div class="audio-progress-wrap" id="progressWrap">
+        <div class="audio-progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+    <button class="audio-vol-btn" id="volBtn" title="Mute / Unmute">&#x1F50A;</button>
+  </div>
+
+  <script>
+  (function(){
+    var audio   = document.getElementById('bgAudio');
+    var playBtn = document.getElementById('playBtn');
+    var volBtn  = document.getElementById('volBtn');
+    var bar     = document.getElementById('progressBar');
+    var wrap    = document.getElementById('progressWrap');
+
+    function setPlaying(on){ playBtn.innerHTML = on ? '&#x23F8;' : '&#x25B6;'; }
+
+    playBtn.addEventListener('click', function(){
+      if(audio.paused){ audio.play(); setPlaying(true); }
+      else             { audio.pause(); setPlaying(false); }
+    });
+
+    volBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      audio.muted = !audio.muted;
+      volBtn.innerHTML = audio.muted ? '&#x1F507;' : '&#x1F50A;';
+    });
+
+    audio.addEventListener('timeupdate', function(){
+      if(audio.duration) bar.style.width = (audio.currentTime/audio.duration*100)+'%';
+    });
+
+    wrap.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(!audio.duration) return;
+      var rect = wrap.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    });
+
+    // autostart on first click or keypress anywhere
+    function startOnGesture(){
+      audio.play().then(function(){ setPlaying(true); }).catch(function(){});
+      document.removeEventListener('click',   startOnGesture);
+      document.removeEventListener('keydown', startOnGesture);
+    }
+    document.addEventListener('click',   startOnGesture);
+    document.addEventListener('keydown', startOnGesture);
+  })();
+  </script>
+</body>
+</html>
